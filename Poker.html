@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Texas Hold'em — 4 Player (Single File)</title>
+<style>
+  :root{
+    --bg:#071617;
+    --table:#0f3b2b;
+    --panel:#0b1c18;
+    --accent:#e0c27a;
+    --muted:#bcd6c8;
+    --card:#ffffff;
+  }
+  html,body{height:100%; margin:0; font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:linear-gradient(180deg,#031617,#071e1a);}
+  .wrap{max-width:1100px;margin:24px auto;padding:18px;}
+  .header{display:flex;align-items:center;justify-content:space-between;color:var(--muted);margin-bottom:14px;}
+  .brand{display:flex;gap:12px;align-items:center;}
+  .logo{width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,#0f8b5b,#206a4e);display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:20px;box-shadow:0 8px 22px rgba(0,0,0,.55);}
+  h1{margin:0;font-size:18px;color:#e8f8ee;}
+  .table-wrap{background:radial-gradient(circle at 20% 10%, rgba(255,255,255,.02), transparent 10%), linear-gradient(180deg, rgba(0,0,0,.25), transparent); border-radius:16px; padding:20px; box-shadow:0 24px 60px rgba(2,6,10,.7);}
+  .poker-table{height:520px;background:var(--table);border-radius:50%;position:relative;margin:0 auto;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 -24px 50px rgba(0,0,0,.55);width:100%;}
+  .table-inner{width:78%;height:78%;border-radius:50%;position:relative;display:flex;align-items:center;justify-content:center;}
+  .seat{position:absolute;width:210px;text-align:center;transform-origin:center;color:var(--muted);font-size:13px;}
+  .player-card{background:linear-gradient(180deg, rgba(255,255,255,.02), transparent);padding:10px;border-radius:10px;display:inline-block;}
+  .seat-name{font-weight:700;color:#e9f5ef;}
+  .chips{margin-top:6px;font-weight:800;color:var(--accent);}
+  .hole{margin-top:8px;display:flex;gap:8px;justify-content:center;}
+  .card{width:48px;height:66px;border-radius:8px;background:linear-gradient(180deg,#ffffff,#f3f3f3);box-shadow:0 6px 14px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;font-weight:800;color:#111;font-size:14px;}
+  .card.hidden{background:linear-gradient(180deg,#123b2f,#0b2f23);color:#123b2f;}
+  .community{position:absolute;width:380px;height:120px;display:flex;align-items:center;justify-content:center;flex-direction:column;left:50%;top:50%;transform:translate(-50%,-50%);}
+  .board-row{display:flex;gap:12px;align-items:center;}
+  .pot-bar{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.4);padding:10px 14px;border-radius:999px;font-weight:700;color:var(--muted);display:flex;gap:12px;align-items:center;}
+  .dealer-btn{display:inline-block;background:rgba(255,255,255,.06);padding:6px 10px;border-radius:999px;font-size:12px;color:#fff;}
+  .status{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.35);padding:10px 14px;border-radius:8px;font-weight:700;color:var(--muted);}
+  .panel{margin-top:14px;display:flex;gap:12px;justify-content:space-between;align-items:flex-start;}
+  .log{background:linear-gradient(180deg,#071f18,#041613);border-radius:10px;padding:12px;width:420px;max-height:260px;overflow:auto;font-size:13px;color:#cfe3d6;}
+  .controls-box{display:flex;flex-direction:column;gap:12px;min-width:260px;}
+  .btn{background:var(--accent);color:#081512;border:0;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:700;box-shadow:0 8px 22px rgba(0,0,0,.45);}
+  .ghost{background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,.06);padding:8px 12px;border-radius:8px;cursor:pointer;}
+  .small{font-size:12px;color:#9fb0a8;}
+  /* seating positions for 4 */
+  .s0{top:50%;left:9%;transform:translate(-50%,-50%);} /* left */
+  .s1{top:12%;left:50%;transform:translate(-50%,-50%);} /* top */
+  .s2{top:50%;left:91%;transform:translate(-50%,-50%);} /* right */
+  .s3{top:88%;left:50%;transform:translate(-50%,-50%);} /* bottom */
+  .action-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  @media (max-width:920px){
+    .poker-table{height:420px;}
+    .seat{width:170px;}
+    .community{width:320px}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div class="brand">
+        <div class="logo">Pkr</div>
+        <div>
+          <h1>Texas Hold'em — 4 Seat Table</h1>
+          <div class="small">Seat 1 = You. Seats 2–4 = Bots. Deterministic decisions.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button id="dealBtn" class="btn">Deal Next Hand</button>
+        <button id="resetBtn" class="ghost">Reset</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="status" id="status">Ready — click Deal Next Hand</div>
+
+      <div class="poker-table" role="application" aria-label="Poker table">
+        <div class="table-inner">
+
+          <div class="seat s0" data-seat="0">
+            <div class="player-card">
+              <div class="seat-name">Seat 1 — You</div>
+              <div class="small">Human</div>
+              <div class="chips" id="chips-0">$1000</div>
+              <div class="hole" id="hole-0"><div class="card hidden">?</div><div class="card hidden">?</div></div>
+            </div>
+          </div>
+
+          <div class="seat s1" data-seat="1">
+            <div class="player-card">
+              <div class="seat-name">Seat 2</div>
+              <div class="small">Bot</div>
+              <div class="chips" id="chips-1">$1000</div>
+              <div class="hole" id="hole-1"><div class="card hidden">?</div><div class="card hidden">?</div></div>
+            </div>
+          </div>
+
+          <div class="seat s2" data-seat="2">
+            <div class="player-card">
+              <div class="seat-name">Seat 3</div>
+              <div class="small">Bot</div>
+              <div class="chips" id="chips-2">$1000</div>
+              <div class="hole" id="hole-2"><div class="card hidden">?</div><div class="card hidden">?</div></div>
+            </div>
+          </div>
+
+          <div class="seat s3" data-seat="3">
+            <div class="player-card">
+              <div class="seat-name">Seat 4</div>
+              <div class="small">Bot</div>
+              <div class="chips" id="chips-3">$1000</div>
+              <div class="hole" id="hole-3"><div class="card hidden">?</div><div class="card hidden">?</div></div>
+            </div>
+          </div>
+
+          <div class="community" aria-hidden="false">
+            <div class="board-row" id="board-row">
+              <div class="card hidden" id="c0">?</div>
+              <div class="card hidden" id="c1">?</div>
+              <div class="card hidden" id="c2">?</div>
+              <div class="card hidden" id="c3">?</div>
+              <div class="card hidden" id="c4">?</div>
+            </div>
+            <div style="margin-top:8px;">
+              <div class="pot-bar" id="potbar">Pot: $0 <span style="width:14px"></span><span id="dealerFlag" class="dealer-btn">Dealer: 1</span></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="log" id="log" aria-live="polite">Game log — actions appear here.</div>
+
+        <div class="controls-box">
+          <div style="background:linear-gradient(180deg,#071f18,#041613);padding:12px;border-radius:10px;">
+            <div class="small">Round</div>
+            <div id="roundLabel" style="font-weight:800;margin-top:6px;color:#e9f5ef">Idle</div>
+            <div style="margin-top:6px;font-size:13px;color:#9fb0a8">To act: <span id="toAct">—</span></div>
+          </div>
+
+          <div style="background:linear-gradient(180deg,#081819,#05100b);padding:12px;border-radius:10px;">
+            <div class="small">Player Actions</div>
+            <div class="action-row" style="margin-top:8px;">
+              <button id="checkBtn" class="btn" disabled>Check</button>
+              <button id="callBtn" class="btn" disabled>Call</button>
+              <button id="betBtn" class="btn" disabled>Bet</button>
+              <button id="foldBtn" class="ghost" disabled>Fold</button>
+            </div>
+            <div style="margin-top:8px;font-size:13px;color:#9fb0a8">Blinds: <strong style="color:var(--accent)">$10/$20</strong></div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+/* 4-Seat Texas Hold'em — Single file
+   - Human at seat 0
+   - Simple deterministic bots at seats 1..3
+   - Basic 7-card evaluator (not exhaustive but good for demo)
+   - Betting: simplified: call/raise fixed increments; handles folding, pot, showdown.
+*/
+
+const STARTING_CHIPS = 1000;
+const SB = 10;
+const BB = 20;
+const SEATS = 4;
+
+// Game state
+let state = {
+  players: [],
+  deck: [],
+  board: [],
+  pot: 0,
+  dealer: 0,
+  toAct: null,
+  currentBet: 0,   // current highest bet for this round
+  minRaise: BB,
+  stage: 'idle',   // idle, preflop, flop, turn, river, showdown
+  handsDealt: 0,
+};
+
+// DOM refs
+const logEl = document.getElementById('log');
+const statusEl = document.getElementById('status');
+const potbar = document.getElementById('potbar');
+const dealerFlag = document.getElementById('dealerFlag');
+const roundLabel = document.getElementById('roundLabel');
+const toActEl = document.getElementById('toAct');
+
+// Player controls
+const dealBtn = document.getElementById('dealBtn');
+const resetBtn = document.getElementById('resetBtn');
+const checkBtn = document.getElementById('checkBtn');
+const callBtn = document.getElementById('callBtn');
+const betBtn = document.getElementById('betBtn');
+const foldBtn = document.getElementById('foldBtn');
+
+// Init
+function initGame(){
+  state.players = [];
+  for(let i=0;i<SEATS;i++){
+    state.players.push({
+      id:i,
+      chips: STARTING_CHIPS,
+      hole: [],
+      folded: false,
+      allin: false,
+      bet: 0,
+      active: true,
+    });
+  }
+  state.deck = [];
+  state.board = [];
+  state.pot = 0;
+  state.currentBet = 0;
+  state.minRaise = BB;
+  state.stage = 'idle';
+  state.handsDealt = 0;
+  state.dealer = 0;
+  updateUI();
+  writeLog('Game initialized.');
+  statusEl.textContent = 'Ready';
+}
+initGame();
+
+// Utilities
+function writeLog(msg){
+  const time = new Date().toLocaleTimeString();
+  logEl.innerHTML = `<div style="margin-bottom:6px">[${time}] ${msg}</div>` + logEl.innerHTML;
+  // trim
+  while(logEl.childNodes.length > 500) logEl.removeChild(logEl.lastChild);
+}
+function makeDeck(){
+  const suits = ['♠','♥','♦','♣'];
+  const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+  const d = [];
+  for(const s of suits) for(const r of ranks) d.push({r,s, id:r+s});
+  return d;
+}
+function shuffle(deck){
+  const d = deck.slice();
+  for(let i=d.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [d[i],d[j]] = [d[j],d[i]];
+  }
+  return d;
+}
+function fmtCard(c){ return `${c.r}${c.s}`; }
+
+// Simple hand scoring (not exhaustive poker engine but adequate for demo)
+function rankValue(r){
+  if(r==='A') return 14;
+  if(r==='K') return 13;
+  if(r==='Q') return 12;
+  if(r==='J') return 11;
+  return parseInt(r,10);
+}
+function isFlush(cards){
+  const counts = {};
+  cards.forEach(c => counts[c.s] = (counts[c.s]||0)+1);
+  return Object.values(counts).some(v => v >= 5);
+}
+function isStraight(ranks){
+  const uniq = Array.from(new Set(ranks)).sort((a,b)=>a-b);
+  // Ace-low check
+  if(uniq.includes(14)){
+    const withA1 = [1].concat(uniq.filter(x=>x!==14));
+    if(checkSequence(withA1,5)) return true;
+  }
+  return checkSequence(uniq,5);
+}
+function checkSequence(arr,len){
+  let run=1;
+  for(let i=1;i<arr.length;i++){
+    if(arr[i] === arr[i-1]+1) run++; else run=1;
+    if(run>=len) return true;
+  }
+  return false;
+}
+function scoreHand(hole, board){
+  const cards = hole.concat(board);
+  const ranks = cards.map(c=>rankValue(c.r)).sort((a,b)=>a-b);
+  const counts = {};
+  for(const r of ranks) counts[r] = (counts[r]||0)+1;
+  const countsArr = Object.entries(counts).map(([r,c])=>({r:+r,c})).sort((a,b)=>b.c - a.c || b.r - a.r);
+
+  if(countsArr[0].c >= 4) return 900000 + countsArr[0].r*100; // quads
+  if(countsArr[0].c===3 && countsArr[1] && countsArr[1].c>=2) return 800000 + countsArr[0].r*100; // full house
+  if(isFlush(cards)) return 700000 + Math.max(...ranks);
+  if(isStraight(ranks)) return 600000 + Math.max(...ranks);
+  if(countsArr[0].c===3) return 500000 + countsArr[0].r*100;
+  if(countsArr[0].c===2 && countsArr[1] && countsArr[1].c===2) return 400000 + countsArr[0].r*100 + countsArr[1].r;
+  if(countsArr[0].c===2) return 300000 + countsArr[0].r*100;
+  return 200000 + Math.max(...ranks);
+}
+
+// UI
+function updateUI(){
+  for(let i=0;i<SEATS;i++){
+    document.getElementById(`chips-${i}`).textContent = `$${state.players[i].chips}`;
+    const holeEl = document.getElementById(`hole-${i}`);
+    const cards = holeEl.children;
+    for(let k=0;k<2;k++){
+      const el = cards[k];
+      if(state.players[i].hole[k]){
+        // show human always; show bots hidden unless showdown
+        if(state.stage === 'showdown' || i===0){
+          el.classList.remove('hidden');
+          el.textContent = fmtCard(state.players[i].hole[k]);
+        } else {
+          el.classList.add('hidden');
+          el.textContent = '?';
+        }
+      } else {
+        el.classList.add('hidden'); el.textContent='?';
+      }
+    }
+  }
+  for(let i=0;i<5;i++){
+    const el = document.getElementById('c'+i);
+    if(state.board[i]){
+      el.classList.remove('hidden'); el.textContent = fmtCard(state.board[i]);
+    } else {
+      el.classList.add('hidden'); el.textContent = '?';
+    }
+  }
+  potbar.textContent = `Pot: $${state.pot}   `;
+  const df = document.createElement('span'); df.className='dealer-btn'; df.textContent=`Dealer: ${state.dealer+1}`;
+  potbar.appendChild(df);
+  statusEl.textContent = `Stage: ${state.stage}`;
+  roundLabel.textContent = state.stage.toUpperCase();
+  toActEl.textContent = state.toAct !== null ? `Seat ${state.toAct+1}` : '—';
+}
+
+// Deal flow
+function dealHand(){
+  // rotate dealer
+  state.dealer = (state.dealer + 1) % SEATS;
+  writeLog(`--- Dealing new hand (#${state.handsDealt+1}) — dealer seat ${state.dealer+1} ---`);
+  // reset
+  state.players.forEach(p=>{
+    p.hole = [];
+    p.folded = false;
+    p.allin = false;
+    p.bet = 0;
+    p.active = p.chips > 0;
+  });
+  state.board = [];
+  state.pot = 0;
+  state.deck = shuffle(makeDeck());
+  state.handsDealt++;
+
+  // post blinds (simple: post SB & BB from next seats)
+  const sbSeat = (state.dealer + 1) % SEATS;
+  const bbSeat = (state.dealer + 2) % SEATS;
+  postBlind(sbSeat, SB, 'SB');
+  postBlind(bbSeat, BB, 'BB');
+
+  // deal cards to everyone with chips
+  for(let i=0;i<2;i++){
+    for(let s=0;s<SEATS;s++){
+      const seat = (state.dealer + 1 + s) % SEATS;
+      const p = state.players[seat];
+      if(p.chips > 0){
+        p.hole.push(state.deck.pop());
+      }
+    }
+  }
+
+  state.stage = 'preflop';
+  state.currentBet = Math.max(SB, BB);
+  state.minRaise = BB;
+  // action starts at seat after BB
+  state.toAct = (bbSeat + 1) % SEATS;
+  updateUI();
+  writeLog('Preflop: action begins.');
+  runBettingRound(state.toAct);
+}
+
+function postBlind(seat, amt, label){
+  const p = state.players[seat];
+  const actual = Math.min(p.chips, amt);
+  p.chips -= actual;
+  p.bet += actual;
+  state.pot += actual;
+  if(p.chips === 0) p.allin = true;
+  writeLog(`${p.name ? p.name : 'Seat '+(seat+1)} posts ${label} $${actual}.`);
+  updateUI();
+}
+
+// Betting round — automated for bots; human acts when it's seat 0
+async function runBettingRound(startSeat){
+  state.toAct = startSeat;
+  updateUI();
+  // We'll loop around until all active players have acted and no further raises
+  let lastRaiser = null;
+  let acted = new Set();
+  let seat = startSeat;
+  const maxIter = 200;
+  let iter = 0;
+
+  while(true){
+    if(iter++ > maxIter) break;
+    const p = state.players[seat];
+    if(p.active && !p.folded && !p.allin){
+      // If it's human's turn
+      if(seat === 0){
+        // enable controls and wait for human action (we implement with Promise)
+        updateUI();
+        writeLog('Your turn.');
+        const action = await humanAction();
+        acted.add(seat);
+        if(action.type === 'raise'){
+          lastRaiser = seat;
+          // continue loop
+        }
+      } else {
+        // Bot acts synchronously with deterministic logic
+        const actionType = botAct(p);
+        acted.add(seat);
+        if(actionType === 'raise') lastRaiser = seat;
+      }
+      // If only one not folded remains, end early
+      const alive = state.players.filter(x => !x.folded && x.active);
+      if(alive.length === 1){
+        writeLog(`${alive[0].name ? alive[0].name : 'Seat '+(alive[0].id+1)} wins — others folded.`);
+        collectPotToWinner(alive[0]);
+        return;
+      }
+
+      // Determine if round complete: everyone has acted since last raise
+      const activeIds = state.players.filter(x=>x.active && !x.folded && !x.allin).map(x=>x.id);
+      if(activeIds.length === 0) break; // no one left to act
+      const everyoneActed = activeIds.every(id => acted.has(id));
+      if(everyoneActed && (lastRaiser === null || acted.has(lastRaiser))) break;
+    }
+    seat = (seat + 1) % SEATS;
+  }
+
+  // Move bets into pot and reset per-player bets for next stage
+  collectBets();
+  updateUI();
+  // Advance stage
+  if(state.stage === 'preflop'){
+    // flop
+    state.stage = 'flop';
+    burnCard(); state.board.push(state.deck.pop(), state.deck.pop(), state.deck.pop());
+    writeLog('Flop dealt.');
+    state.toAct = (state.dealer + 1) % SEATS;
+    state.currentBet = 0;
+    runBettingRound(state.toAct);
+  } else if(state.stage === 'flop'){
+    state.stage = 'turn';
+    burnCard(); state.board.push(state.deck.pop());
+    writeLog('Turn dealt.');
+    state.toAct = (state.dealer + 1) % SEATS;
+    state.currentBet = 0;
+    runBettingRound(state.toAct);
+  } else if(state.stage === 'turn'){
+    state.stage = 'river';
+    burnCard(); state.board.push(state.deck.pop());
+    writeLog('River dealt.');
+    state.toAct = (state.dealer + 1) % SEATS;
+    state.currentBet = 0;
+    runBettingRound(state.toAct);
+  } else if(state.stage === 'river'){
+    state.stage = 'showdown';
+    showdown();
+  }
+}
+
+function burnCard(){ state.deck.pop(); }
+
+// Human action: returns a Promise that resolves when user clicks action
+function humanAction(){
+  return new Promise((resolve) => {
+    // enable UI
+    checkBtn.disabled = false;
+    callBtn.disabled = false;
+    betBtn.disabled = false;
+    foldBtn.disabled = false;
+    // set labels for call / bet amounts
+    const toCall = state.currentBet - state.players[0].bet;
+    callBtn.textContent = toCall > 0 ? `Call $${toCall}` : 'Call $0';
+    betBtn.textContent = `Bet $${Math.max(state.minRaise, BB)}`;
+
+    function cleanup(){
+      checkBtn.disabled = true; callBtn.disabled = true; betBtn.disabled = true; foldBtn.disabled = true;
+      checkBtn.removeEventListener('click', onCheck);
+      callBtn.removeEventListener('click', onCall);
+      betBtn.removeEventListener('click', onBet);
+      foldBtn.removeEventListener('click', onFold);
+    }
+    function onCheck(){
+      // check only allowed if toCall == 0
+      const toCall = state.currentBet - state.players[0].bet;
+      if(toCall > 0) return;
+      writeLog('You check.');
+      cleanup(); resolve({type:'check'});
+    }
+    function onCall(){
+      const toCall = Math.min(state.currentBet - state.players[0].bet, state.players[0].chips);
+      state.players[0].chips -= toCall;
+      state.players[0].bet += toCall;
+      state.pot += toCall;
+      if(state.players[0].chips === 0) state.players[0].allin = true;
+      writeLog(`You call $${toCall}.`);
+      cleanup(); resolve({type:'call'});
+      updateUI();
+    }
+    function onBet(){
+      // simple bet: set new bet = currentBet + minRaise (or fixed)
+      const raiseAmt = Math.min(state.players[0].chips, Math.max(state.minRaise, BB));
+      const target = state.currentBet + raiseAmt;
+      const diff = target - state.players[0].bet;
+      state.players[0].chips -= diff;
+      state.players[0].bet = target;
+      state.pot += diff;
+      state.currentBet = target;
+      state.minRaise = raiseAmt;
+      if(state.players[0].chips === 0) state.players[0].allin = true;
+      writeLog(`You bet $${target}.`);
+      cleanup(); resolve({type:'raise'});
+      updateUI();
+    }
+    function onFold(){
+      state.players[0].folded = true;
+      state.players[0].active = false;
+      writeLog('You fold.');
+      cleanup(); resolve({type:'fold'});
+    }
+    checkBtn.addEventListener('click', onCheck);
+    callBtn.addEventListener('click', onCall);
+    betBtn.addEventListener('click', onBet);
+    foldBtn.addEventListener('click', onFold);
+  });
+}
+
+// Bot decision (deterministic rules)
+function botAct(player){
+  // If nothing to call, small chance to bet
+  const playerId = player.id;
+  const toCall = state.currentBet - player.bet;
+  // Evaluate strength simply: preflop use ranks, postflop use scoreHand
+  let strength = 0;
+  if(state.stage === 'preflop'){
+    const ar = player.hole.map(c => rankValue(c.r)).sort((a,b)=>b-a);
+    const a = ar[0], b = ar[1];
+    if(a===b) strength += 60 + a;
+    if(a >= 14) strength += 18;
+    if(a >= 13) strength += 12;
+    if(player.hole[0].s === player.hole[1].s) strength += 8;
+    if(Math.abs(a-b) <= 1) strength += 6;
+  } else {
+    strength = scoreHand(player.hole, state.board)/10000; // scaled
+  }
+
+  // decision thresholds deterministic
+  if(toCall === 0){
+    if(strength > 70){
+      // bet/raise a bit
+      const raiseAmt = Math.min(player.chips, Math.max(state.minRaise, Math.floor(state.pot*0.25) || BB));
+      const target = state.currentBet + raiseAmt;
+      const diff = target - player.bet;
+      player.chips -= diff; player.bet = target; state.pot += diff;
+      state.currentBet = target; state.minRaise = raiseAmt;
+      if(player.chips === 0) player.allin = true;
+      writeLog(`Seat ${playerId+1} raises to $${target}.`);
+      updateUI();
+      return 'raise';
+    } else {
+      writeLog(`Seat ${playerId+1} checks.`);
+      return 'check';
+    }
+  } else {
+    // there is something to call
+    if(strength > 50){
+      // call or raise if strong
+      const callAmt = Math.min(toCall, player.chips);
+      player.chips -= callAmt; player.bet += callAmt; state.pot += callAmt;
+      if(player.chips === 0) player.allin = true;
+      writeLog(`Seat ${playerId+1} calls $${callAmt}.`);
+      updateUI();
+      return 'call';
+    } else {
+      // fold if weak, unless small call
+      if(toCall <= BB){
+        const callAmt = Math.min(toCall, player.chips);
+        player.chips -= callAmt; player.bet += callAmt; state.pot += callAmt;
+        if(player.chips === 0) player.allin = true;
+        writeLog(`Seat ${playerId+1} calls $${callAmt}.`);
+        updateUI();
+        return 'call';
+      } else {
+        player.folded = true; player.active = false;
+        writeLog(`Seat ${playerId+1} folds.`);
+        updateUI();
+        return 'fold';
+      }
+    }
+  }
+}
+
+// collect bets (move player's bet fields into pot and reset bets)
+function collectBets(){
+  // bets already added to pot during actions; just reset player.bet
+  state.players.forEach(p => p.bet = 0);
+  state.currentBet = 0;
+  state.minRaise = BB;
+}
+
+// if only one alive, award pot
+function collectPotToWinner(winner){
+  winner.chips += state.pot;
+  writeLog(`${winner.name ? winner.name : 'Seat '+(winner.id+1)} collects $${state.pot}.`);
+  state.pot = 0;
+  state.stage = 'idle';
+  updateUI();
+}
+
+// showdown
+function showdown(){
+  writeLog('Showdown — comparing hands.');
+  // reveal all hole cards
+  updateUI();
+  // find alive players
+  const alive = state.players.filter(p => !p.folded);
+  const scored = alive.map(p => ({p, s: scoreHand(p.hole, state.board)}));
+  scored.sort((a,b)=>b.s - a.s);
+  const best = scored[0].s;
+  const winners = scored.filter(x => x.s === best).map(x => x.p);
+  const split = Math.floor(state.pot / winners.length);
+  winners.forEach(w => {
+    w.chips += split;
+  });
+  writeLog(`Winner(s): ${winners.map(w=> 'Seat '+(w.id+1)).join(', ')} — $${split} each.`);
+  state.pot = 0;
+  state.stage = 'idle';
+  updateUI();
+}
+
+// Event wiring
+dealBtn.addEventListener('click', ()=>{
+  // ensure at least two players with chips
+  const activeCount = state.players.filter(p=>p.chips>0).length;
+  if(activeCount < 2){
+    writeLog('Not enough players with chips. Resetting all stacks.');
+    state.players.forEach(p => p.chips = STARTING_CHIPS);
+    updateUI();
+    return;
+  }
+  dealHand();
+});
+resetBtn.addEventListener('click', ()=>{
+  initGame();
+});
+
+// small helper to ensure initial player names
+state.players.forEach((p,i) => p.name = `Seat ${i+1}`);
+
+// initial UI refresh
+updateUI();
+
+</script>
+</body>
+</html>

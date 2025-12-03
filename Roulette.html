@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roulette Wheel</title>
+<style>
+:root{
+    --bg:#071018;
+    --panel:#0f2a23;
+    --accent:#f5c45a;
+    --muted:#cfe6db;
+}
+body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,#031118,#071a17);color:var(--muted);}
+.wrap{max-width:800px;margin:20px auto;text-align:center;}
+.title h1{margin:0;font-size:28px;color:#fff;}
+.money{font-size:20px;font-weight:800;margin:10px 0;}
+.wheel-container{position:relative;width:400px;height:400px;margin:0 auto;}
+.wheel{width:100%;height:100%;border-radius:50%;border:6px solid #444;position:relative;transform:rotate(0deg);transition:transform 3s cubic-bezier(0.33, 1, 0.68, 1);}
+.number{position:absolute;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:50%;color:#fff;font-weight:800;cursor:pointer;user-select:none;}
+.number.red{background:#c41f1f;}
+.number.black{background:#000;}
+.number.green{background:#0c4;}
+.selected{box-shadow:0 0 10px 3px var(--accent);}
+.controls{margin-top:15px;}
+.controls input{width:80px;padding:6px;border-radius:6px;border:none;background:rgba(255,255,255,0.05);color:var(--muted);text-align:center;margin-right:10px;}
+button{background:linear-gradient(180deg,#2db26b,#1f8b50); color:#042217; font-weight:800; border:none; padding:10px 16px; border-radius:8px; cursor:pointer; box-shadow:0 8px 24px rgba(15,80,50,.15);}
+button.secondary{background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,.06);}
+.message{min-height:30px;font-weight:800;margin-top:12px;color:#cfe8df;}
+.ball{position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:50%;left:50%;transform:translate(-50%,-50%);}
+</style>
+</head>
+<body>
+<div class="wrap">
+    <div class="title"><h1>Roulette Wheel</h1></div>
+    <div class="money" id="moneyLabel">Money: $1000</div>
+    <div class="wheel-container">
+        <div class="wheel" id="wheel"></div>
+        <div class="ball" id="ball"></div>
+    </div>
+    <div class="controls">
+        <label>Bet $<input type="number" id="betAmount" value="50" min="1"></label>
+        <button id="spinBtn">Spin</button>
+        <button id="resetBtn" class="secondary">Reset</button>
+    </div>
+    <div class="message" id="message"></div>
+</div>
+
+<script>
+const RED_NUMS=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+const BLACK_NUMS=[2,4,6,8,10,11,13,15,17,20,22,24,26,28,29,31,33,35];
+const GREEN_NUMS=[0];
+
+let money=1000;
+let betAmount=50;
+let selectedNumber=null;
+
+const moneyLabel=document.getElementById('moneyLabel');
+const wheelEl=document.getElementById('wheel');
+const betInput=document.getElementById('betAmount');
+const spinBtn=document.getElementById('spinBtn');
+const resetBtn=document.getElementById('resetBtn');
+const messageEl=document.getElementById('message');
+
+// ===== create numbers around wheel =====
+function createWheel(){
+    wheelEl.innerHTML='';
+    const numbers=[0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
+    const radius=180;
+    const angleStep=360/numbers.length;
+    numbers.forEach((num,index)=>{
+        const angle=index*angleStep;
+        const rad=angle*Math.PI/180;
+        const x=radius+radius*Math.cos(rad)-20;
+        const y=radius+radius*Math.sin(rad)-20;
+        const div=document.createElement('div');
+        div.classList.add('number');
+        if(RED_NUMS.includes(num)) div.classList.add('red');
+        else if(BLACK_NUMS.includes(num)) div.classList.add('black');
+        else div.classList.add('green');
+        div.textContent=num;
+        div.style.left=x+'px';
+        div.style.top=y+'px';
+        div.addEventListener('click',()=>{selectedNumber=num; updateSelection();});
+        wheelEl.appendChild(div);
+    });
+}
+createWheel();
+
+function updateSelection(){
+    document.querySelectorAll('.number').forEach(n=>n.classList.remove('selected'));
+    if(selectedNumber!==null){
+        const sel=document.querySelectorAll('.number');
+        sel.forEach(n=>{if(Number(n.textContent)===selectedNumber)n.classList.add('selected');});
+    }
+}
+
+function numberWithCommas(x){return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g,",");}
+function updateUI(){moneyLabel.textContent=`Money: $${numberWithCommas(money)}`;}
+
+spinBtn.addEventListener('click',()=>{
+    betAmount=Math.max(1,Number(betInput.value));
+    if(selectedNumber===null){messageEl.textContent="Select a number!"; return;}
+    if(money<betAmount){messageEl.textContent="Not enough money!"; return;}
+
+    money-=betAmount;
+    updateUI();
+    messageEl.textContent="Spinning...";
+    const spinDeg=360*5 + randInt(0,359); // multiple spins
+    wheelEl.style.transition="transform 3s cubic-bezier(0.33,1,0.68,1)";
+    wheelEl.style.transform=`rotate(${spinDeg}deg)`;
+
+    setTimeout(()=>{
+        const numbers=[0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
+        const anglePerNum=360/numbers.length;
+        let finalIndex=Math.floor((spinDeg%360)/anglePerNum);
+        let result=numbers[numbers.length-1-finalIndex];
+        if(result===undefined) result=0;
+
+        if(selectedNumber===result){
+            const win=betAmount*35;
+            money+=win;
+            messageEl.textContent=`🎉 Number ${result} hit! You win $${numberWithCommas(win)}!`;
+        } else{
+            messageEl.textContent=`Number ${result} hit. You lose.`;
+        }
+        updateUI();
+        selectedNumber=null;
+        updateSelection();
+    },3100);
+});
+
+resetBtn.addEventListener('click',()=>{
+    money=1000;
+    selectedNumber=null;
+    betAmount=50;
+    betInput.value=50;
+    wheelEl.style.transition="none";
+    wheelEl.style.transform="rotate(0deg)";
+    updateUI();
+    messageEl.textContent="Game reset.";
+});
+function randInt(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+</script>
+</body>
+</html>
