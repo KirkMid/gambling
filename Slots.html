@@ -5,319 +5,245 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Slots</title>
 <style>
-  :root{
-    --bg:#071018;
-    --panel:#0f2a23;
-    --accent:#f5c45a;
-    --muted:#cfe6db;
-    --glass: rgba(255,255,255,0.06);
-  }
-  html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:linear-gradient(180deg,#031118,#071a17);}
-  .wrap{max-width:760px;margin:28px auto;padding:20px;}
-  .machine{background:linear-gradient(180deg,#0c2c22,#07231b); border-radius:18px; padding:22px; color:var(--muted); box-shadow:0 24px 80px rgba(0,0,0,.7);}
-  .top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px;}
-  .title{display:flex;flex-direction:column;}
-  .title h1{margin:0;font-size:20px;color:#fff;}
-  .subtitle{font-size:13px;color:#9fb0a8;}
-  .jackpot{font-weight:900;color:var(--accent); font-size:20px; text-shadow:0 4px 20px rgba(255,200,90,.08);}
-  .content{display:flex;gap:20px;align-items:flex-start;}
-  .left{flex:1;}
-  .reels{background:var(--glass); padding:18px; border-radius:12px; display:flex; gap:12px; justify-content:center; align-items:center;}
-  .reel{width:120px;height:120px;border-radius:10px;background:linear-gradient(180deg,#071e1a,#042015);display:flex;align-items:center;justify-content:center;font-size:52px;box-shadow:inset 0 -6px 18px rgba(0,0,0,.6), 0 8px 30px rgba(0,0,0,.5); border:2px solid rgba(255,255,255,.03); color:#fff;}
-  .controls{margin-top:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
-  button{background:linear-gradient(180deg,#2db26b,#1f8b50); color:#042217; font-weight:800; border:none; padding:12px 18px; border-radius:10px; cursor:pointer; box-shadow:0 10px 30px rgba(15,80,50,.15); font-size:15px;}
-  button.secondary{background:transparent; color:var(--muted); border:1px solid rgba(255,255,255,.06);}
-  button[disabled]{opacity:.5; cursor:not-allowed;}
-  .right{width:320px;}
-  .panel{background:linear-gradient(180deg,#071818,#041210); padding:12px; border-radius:10px; box-shadow:0 8px 26px rgba(0,0,0,.5);}
-  .money{font-size:18px; font-weight:800; color:#e6fff2; margin-bottom:6px;}
-  .bet-row{display:flex;gap:8px;align-items:center;margin-top:8px;}
-  .bet-row input{width:100px;padding:8px;border-radius:8px;border:none;background:rgba(255,255,255,0.03);color:var(--muted);text-align:center;}
-  .message{margin-top:12px; min-height:36px; font-weight:800; color:#cfe8df;}
-  .small{font-size:13px;color:#9fb0a8;}
-  .footer{margin-top:14px; display:flex; justify-content:space-between; align-items:center;}
-  @media (max-width:820px){
-    .content{flex-direction:column;}
-    .right{width:100%;}
-  }
+:root{
+  --bg:#071018;
+  --panel:#0f2a23;
+  --accent:#f5c45a;
+  --muted:#cfe6db;
+  --glass: rgba(255,255,255,0.06);
+}
+html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:linear-gradient(180deg,#031118,#071a17);}
+.wrap{max-width:760px;margin:28px auto;padding:20px;}
+.machine{background:linear-gradient(180deg,#0c2c22,#07231b); border-radius:18px; padding:22px; color:var(--muted); box-shadow:0 24px 80px rgba(0,0,0,.7);}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px;}
+.title{display:flex;flex-direction:column;}
+.title h1{margin:0;font-size:20px;color:#fff;}
+.jackpot{font-weight:900;color:var(--accent); font-size:20px; text-shadow:0 4px 20px rgba(255,200,90,.08);}
+.content{display:flex;gap:20px;align-items:flex-start;}
+.left{flex:1;}
+.reels{background:var(--glass); padding:18px; border-radius:12px; display:flex; gap:12px; justify-content:center; align-items:center;}
+.reel{width:120px;height:120px;border-radius:10px;background:linear-gradient(180deg,#071e1a,#042015);display:flex;align-items:center;justify-content:center;font-size:52px;box-shadow:inset 0 -6px 18px rgba(0,0,0,.6), 0 8px 30px rgba(0,0,0,.5); border:2px solid rgba(255,255,255,.03); color:#fff;}
+.controls{margin-top:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+button{background:linear-gradient(180deg,#2db26b,#1f8b50); color:#042217; font-weight:800; border:none; padding:12px 18px; border-radius:10px; cursor:pointer; box-shadow:0 10px 30px rgba(15,80,50,.15); font-size:15px;}
+button.secondary{background:transparent; color:var(--muted); border:1px solid rgba(255,255,255,.06);}
+button[disabled]{opacity:.5; cursor:not-allowed;}
+.right{width:320px;}
+.panel{background:linear-gradient(180deg,#071818,#041210); padding:12px; border-radius:10px; box-shadow:0 8px 26px rgba(0,0,0,.5);}
+.money{font-size:18px; font-weight:800; color:#e6fff2; margin-bottom:6px;}
+.bet-row{display:flex;gap:8px;align-items:center;margin-top:8px;}
+.bet-row input{width:100px;padding:8px;border-radius:8px;border:none;background:rgba(255,255,255,0.03);color:var(--muted);text-align:center;}
+.message{margin-top:12px; min-height:36px; font-weight:800; color:#cfe8df;}
+.small{font-size:13px;color:#9fb0a8;}
+.footer{margin-top:14px; display:flex; justify-content:space-between; align-items:center;}
+.hidden-panel{display:none;margin-top:8px;background:rgba(255,255,255,0.05);padding:6px;border-radius:6px;flex-direction:row;align-items:center;gap:4px;}
+.hidden-panel input{width:60px;font-size:13px;padding:4px;}
+.hidden-panel button{font-size:13px;padding:4px 6px;}
+.passcode-container{display:flex;gap:4px;margin-top:6px;}
+.passcode-container input{width:100px;font-size:13px;padding:4px;}
+.passcode-container button{font-size:13px;padding:4px 6px;}
+@media (max-width:820px){
+  .content{flex-direction:column;}
+  .right{width:100%;}
+}
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="machine" role="application" aria-label="Slot machine">
-      <div class="top">
-        <div class="title">
-          <h1>Deluxe Slots</h1>
+<div class="wrap">
+  <div class="machine">
+    <div class="top">
+      <div class="title"><h1>Deluxe Slots</h1></div>
+      <div class="jackpot" id="jackpot">Jackpot: $0</div>
+    </div>
+
+    <div class="content">
+      <div class="left">
+        <div class="reels">
+          <div class="reel" id="reel1">🍒</div>
+          <div class="reel" id="reel2">🍋</div>
+          <div class="reel" id="reel3">🍉</div>
         </div>
-        <div class="jackpot" id="jackpot">Jackpot: $0</div>
+
+        <div class="controls">
+          <button id="spinBtn">SPIN</button>
+          <div style="flex:1"></div>
+          <div class="small">Spin cost: <strong id="spinCostLabel">$50</strong></div>
+        </div>
+
+        <div class="message" id="message"></div>
       </div>
 
-      <div class="content">
-        <div class="left">
-          <div class="reels" aria-hidden="false">
-            <div class="reel" id="reel1">🍒</div>
-            <div class="reel" id="reel2">🍋</div>
-            <div class="reel" id="reel3">🍉</div>
-          </div>
+      <div class="right">
+        <div class="panel">
+          <div class="money" id="moneyLabel">Money: $1,000</div>
+          <div class="small">Balance available to play</div>
 
-          <div class="controls" style="margin-top:14px;">
-            <button id="spinBtn">SPIN</button>
-            <div style="flex:1"></div>
-            <div class="small">Spin cost: <strong id="spinCostLabel">$50</strong></div>
-          </div>
-
-          <div class="message" id="message" aria-live="polite"></div>
-        </div>
-
-        <div class="right">
-          <div class="panel">
-            <div class="money" id="moneyLabel">Money: $1,000</div>
-            <div class="small">Balance available to play</div>
-
-            <div style="margin-top:12px;">
-              <div class="small">Bet settings</div>
-              <div class="bet-row">
-                <label class="small">Spin cost $</label>
-                <input id="spinCost" type="number" min="1" step="1" value="50">
-              </div>
-              <div style="margin-top:10px;" class="small">Payouts (3-match):</div>
-              <ul class="small" style="margin:6px 0 0 16px; padding:0;">
-                <li>🍒🍒🍒 = 10× bet</li>
-                <li>🍋🍋🍋 = 20× bet</li>
-                <li>🍉🍉🍉 = 50× bet</li>
-                <li>⭐️⭐️⭐️ = 200× bet</li>
-                <li>7️⃣7️⃣7️⃣ = Jackpot</li>
-              </ul>
+          <div style="margin-top:12px;">
+            <div class="small">Bet settings</div>
+            <div class="bet-row">
+              <label class="small">Spin cost $</label>
+              <input id="spinCost" type="number" min="1" step="1" value="50">
             </div>
+            <div style="margin-top:10px;" class="small">Payouts (3-match):</div>
+            <ul class="small" style="margin:6px 0 0 16px; padding:0;">
+              <li>🍒🍒🍒 = 10× bet</li>
+              <li>🍋🍋🍋 = 20× bet</li>
+              <li>🍉🍉🍉 = 50× bet</li>
+              <li>⭐️⭐️⭐️ = 200× bet</li>
+              <li>7️⃣7️⃣7️⃣ = Jackpot</li>
+            </ul>
+          </div>
 
-            <div style="margin-top:12px;">
-              <div class="small">Quick controls</div>
-              <div style="display:flex;gap:8px;margin-top:8px;">
-                <button id="resetBtn" class="secondary">Reset Game</button>
-              </div>
+          <div style="margin-top:12px;">
+            <div class="small">Quick controls</div>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button id="resetBtn" class="secondary">Reset Game</button>
             </div>
           </div>
 
-          <div style="margin-top:12px;" class="small">Tip: Jackpot is randomized each round between $1,000 and $1,000,000.</div>
-        </div>
-      </div>
+          <!-- Hidden rig control panel -->
+          <div class="hidden-panel" id="rigPanel">
+            <input id="rigInput" type="number" min="0" max="100" value="5">
+            <button id="updateRigBtn">Set Rig %</button>
+          </div>
 
-      <div class="footer">
-        <div class="small">V1.002.525</div>
+          <!-- Passcode entry -->
+          <div class="passcode-container">
+            <input id="passcodeInput" type="password" placeholder="Passcode">
+            <button id="passcodeBtn">Enter</button>
+          </div>
+
+        </div>
+
+        <div style="margin-top:12px;" class="small">Tip: Jackpot is randomized each round between $1,000 and $1,000,000.</div>
       </div>
     </div>
+
+    <div class="footer"><div class="small">V1.002.525</div></div>
   </div>
+</div>
 
 <script>
-/* ---------------------------
-  COMPLETE SINGLE-FILE SLOTS
-  - Hidden rig variable (not shown in UI)
-  - Player money management
-  - Jackpot randomized 1,000–1,000,000 and shown at top
-  - Payouts and spin cost adjustable by owner
-----------------------------*/
+let HIDDEN_RIG_WIN_PERCENT = 5;
+const SYMBOLS = ["🍒","🍋","🍉","⭐","7️⃣","🍇"];
+const PAYOUTS = { "🍒":10, "🍋":20, "🍉":50, "⭐":200, "7️⃣":"JACKPOT", "🍇":5 };
 
-// ===== HIDDEN HOUSE RIGGING =====
-// Change this percentage in the code to adjust "forced win" frequency.
-// This variable is NOT exposed in the UI. (0 = no forced wins, 100 = always win)
-const HIDDEN_RIG_WIN_PERCENT = 6; // <<--- edit here if you want to rig (kept hidden from players)
-
-// ===== Symbols and payouts =====
-const SYMBOLS = ["🍒","🍋","🍉","⭐","7️⃣","🍇"]; // available symbols
-const PAYOUTS = { // multiplier for 3-of-a-kind (except jackpot)
-  "🍒": 10,
-  "🍋": 20,
-  "🍉": 50,
-  "⭐": 200,
-  "7️⃣": "JACKPOT",
-  "🍇": 5
-};
-
-// ===== Game state =====
 let money = 1000;
 let spinCost = 50;
-let jackpot = randInt(1000, 1000000);
-let lastWinAmount = 0;
+let jackpot = randInt(1000,1000000);
 
-// UI references
 const reelEls = [document.getElementById('reel1'), document.getElementById('reel2'), document.getElementById('reel3')];
 const spinBtn = document.getElementById('spinBtn');
-const maxBtn = document.getElementById('maxBtn');
 const spinCostInput = document.getElementById('spinCost');
 const moneyLabel = document.getElementById('moneyLabel');
 const messageEl = document.getElementById('message');
 const jackpotEl = document.getElementById('jackpot');
 const spinCostLabel = document.getElementById('spinCostLabel');
-const lastWinEl = document.getElementById('lastWin');
-const saveBtn = document.getElementById('saveBtn');
-const loadBtn = document.getElementById('loadBtn');
 const resetBtn = document.getElementById('resetBtn');
 
-// initialization
-updateUI();
-jackpotEl.textContent = `Jackpot: $${numberWithCommas(jackpot)}`;
+const rigPanel = document.getElementById('rigPanel');
+const rigInput = document.getElementById('rigInput');
+const updateRigBtn = document.getElementById('updateRigBtn');
+const passcodeInput = document.getElementById('passcodeInput');
+const passcodeBtn = document.getElementById('passcodeBtn');
 
-// === helpers ===
 function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
 function choose(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-function numberWithCommas(x){ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+function numberWithCommas(x){ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g,","); }
+function wait(ms){ return new Promise(resolve=>setTimeout(resolve,ms)); }
 
-// update displayed UI
 function updateUI(){
   moneyLabel.textContent = `Money: $${numberWithCommas(money)}`;
-  spinCost = Math.max(1, Math.floor(Number(spinCostInput.value) || 50));
+  spinCost = Math.max(1, Math.floor(Number(spinCostInput.value)||50));
   spinCostLabel.textContent = `$${spinCost}`;
   jackpotEl.textContent = `Jackpot: $${numberWithCommas(jackpot)}`;
-  lastWinEl.textContent = lastWinAmount ? `Last win: $${numberWithCommas(lastWinAmount)}` : 'Last win: —';
 }
 
-// ===== Spin flow =====
-spinBtn.addEventListener('click', async () => {
-  if (money < spinCost) {
-    messageEl.textContent = "Not enough money — add funds.";
-    return;
-  }
-  // Deduct cost immediately
-  money -= spinCost;
+// -------- SPIN --------
+spinBtn.addEventListener('click', async ()=>{
+  if(money<spinCost){ messageEl.textContent="Not enough money."; return; }
+  money-=spinCost;
   updateUI();
-  messageEl.textContent = 'Spinning...';
-  spinBtn.disabled = true;
-  addBtn.disabled = true;
-  maxBtn.disabled = true;
+  messageEl.textContent='Spinning...';
+  spinBtn.disabled=true;
 
-  // Start reel animations: cycle random symbols quickly
   const intervals = [];
-  for (let i=0;i<3;i++){
-    intervals[i] = setInterval(() => {
-      reelEls[i].textContent = choose(SYMBOLS);
-    }, 80 + i*10);
+  for(let i=0;i<3;i++){
+    intervals[i]=setInterval(()=>{ reelEls[i].textContent=choose(SYMBOLS); },80+i*10);
   }
 
-  // Determine outcome using hidden rig
-  const forceWin = (Math.random()*100) < HIDDEN_RIG_WIN_PERCENT;
-
-  // Decide final symbols ahead of stopping to control outcome deterministically
+  const forceWin = Math.random()*100<HIDDEN_RIG_WIN_PERCENT;
   let finalSymbols;
-  if (forceWin){
-    // Force a 3-of-a-kind (prefer non-jackpot wins sometimes; small chance to force jackpot)
-    const jackpotForce = Math.random() < 0.06; // small portion of forced wins become jackpot
-    if (jackpotForce) {
-      finalSymbols = ["7️⃣","7️⃣","7️⃣"];
-    } else {
-      // choose a random normal symbol weighted towards mid-tier
-      const choices = ["🍒","🍋","🍉","⭐","🍇"];
-      const s = choices[Math.floor(Math.random()*choices.length)];
-      finalSymbols = [s,s,s];
-    }
+  if(forceWin){
+    finalSymbols = Math.random()<0.06 ? ["7️⃣","7️⃣","7️⃣"] : Array(3).fill(choose(["🍒","🍋","🍉","⭐","🍇"]));
   } else {
-    // Normal random outcome — allow any combination
-    finalSymbols = [ choose(SYMBOLS), choose(SYMBOLS), choose(SYMBOLS) ];
-    // Extremely small chance to produce natural jackpot (not forced)
-    if (Math.random() < 0.001) finalSymbols = ["7️⃣","7️⃣","7️⃣"];
+    finalSymbols = [choose(SYMBOLS),choose(SYMBOLS),choose(SYMBOLS)];
+    if(Math.random()<0.001) finalSymbols = ["7️⃣","7️⃣","7️⃣"];
   }
 
-  // Stop reels in sequence with delays for that slot-machine feel
-  await wait(700);
-  clearInterval(intervals[0]);
-  reelEls[0].textContent = finalSymbols[0];
+  await wait(700); clearInterval(intervals[0]); reelEls[0].textContent=finalSymbols[0];
+  await wait(400); clearInterval(intervals[1]); reelEls[1].textContent=finalSymbols[1];
+  await wait(400); clearInterval(intervals[2]); reelEls[2].textContent=finalSymbols[2];
 
-  await wait(400);
-  clearInterval(intervals[1]);
-  reelEls[1].textContent = finalSymbols[1];
-
-  await wait(400);
-  clearInterval(intervals[2]);
-  reelEls[2].textContent = finalSymbols[2];
-
-  // Evaluate result
   evaluateResult(finalSymbols);
+  spinBtn.disabled=false;
 
-  // Re-enable controls
-  spinBtn.disabled = false;
-  addBtn.disabled = false;
-  maxBtn.disabled = false;
+  // Close rig panel after spin
+  rigPanel.style.display="none";
   updateUI();
 });
 
-// evaluate win/loss
+// -------- RESULT --------
 function evaluateResult(symbols){
-  messageEl.textContent = '';
-  lastWinAmount = 0;
-
-  // 3-of-a-kind
-  if (symbols[0] === symbols[1] && symbols[1] === symbols[2]){
-    const s = symbols[0];
-    if (s === "7️⃣"){
-      // Jackpot winner
-      const win = jackpot;
-      money += win;
-      lastWinAmount = win;
-      messageEl.textContent = `🎉 JACKPOT! You won $${numberWithCommas(win)}!`;
-      // reset jackpot
-      jackpot = randInt(1000, 1000000);
-      jackpotEl.textContent = `Jackpot: $${numberWithCommas(jackpot)}`;
+  if(symbols[0]===symbols[1] && symbols[1]===symbols[2]){
+    const s=symbols[0];
+    if(s==="7️⃣"){
+      const win=jackpot;
+      money+=win;
+      messageEl.textContent=`🎉 JACKPOT! You won $${numberWithCommas(win)}!`;
+      jackpot=randInt(1000,1000000);
     } else {
-      const mult = PAYOUTS[s] || 1;
-      const win = spinCost * mult;
-      money += win;
-      lastWinAmount = win;
-      messageEl.textContent = `You hit ${s}${s}${s} — you win $${numberWithCommas(win)}! (×${mult})`;
+      const mult=PAYOUTS[s]||1;
+      const win=spinCost*mult;
+      money+=win;
+      messageEl.textContent=`You hit ${s}${s}${s} — you win $${numberWithCommas(win)}! (×${mult})`;
     }
   } else {
-    messageEl.textContent = 'No win — try again.';
+    messageEl.textContent='No win — try again.';
   }
-  updateUI();
 }
 
-// small utilities
-function wait(ms){ return new Promise(resolve => setTimeout(resolve, ms)); }
-
-// ===== quick controls =====
-maxBtn.addEventListener('click', ()=>{
-  // set spin cost to half of current money (rounded) as example of "max bet"
-  const half = Math.max(1, Math.floor(money/2));
-  spinCostInput.value = String(half);
+// -------- RESET --------
+resetBtn.addEventListener('click', ()=>{
+  money=1000;
+  spinCostInput.value=50;
+  jackpot=randInt(1000,1000000);
+  messageEl.textContent='Game reset.';
   updateUI();
-  messageEl.textContent = `Max bet set to $${numberWithCommas(half)}.`;
 });
 
-// spin cost input changes
-spinCostInput.addEventListener('change', ()=>{ updateUI(); });
-
-// Save/load balance to localStorage
-saveBtn.addEventListener('click', ()=>{
-  const state = {money, jackpot, spinCost: Number(spinCostInput.value)};
-  localStorage.setItem('simple_slots_state', JSON.stringify(state));
-  messageEl.textContent = 'Balance saved locally.';
+// -------- PASSCODE --------
+passcodeBtn.addEventListener('click', ()=>{
+  if(passcodeInput.value.trim()==="Blueberry J"){
+    rigPanel.style.display="flex";
+    messageEl.textContent="Password accepted — rig panel unlocked!";
+  } else {
+    messageEl.textContent="Password incorrect.";
+  }
+  passcodeInput.value="";
 });
-loadBtn.addEventListener('click', ()=>{
-  const raw = localStorage.getItem('simple_slots_state');
-  if (!raw){ messageEl.textContent = 'No saved state found.'; return; }
-  try {
-    const s = JSON.parse(raw);
-    money = Number(s.money) || money;
-    jackpot = Number(s.jackpot) || jackpot;
-    spinCostInput.value = Number(s.spinCost) || spinCostInput.value;
-    updateUI();
-    messageEl.textContent = 'Saved state loaded.';
-  } catch(e){
-    messageEl.textContent = 'Failed to load state.';
+
+// -------- UPDATE RIG --------
+updateRigBtn.addEventListener('click', ()=>{
+  const val=Number(rigInput.value);
+  if(val>=0 && val<=100){
+    HIDDEN_RIG_WIN_PERCENT=val;
+    messageEl.textContent=`Rig % updated to ${val}%`;
+  } else {
+    messageEl.textContent="Enter a number 0–100.";
   }
 });
 
-// Reset game
-resetBtn.addEventListener('click', ()=>{
-  money = 1000;
-  spinCostInput.value = 50;
-  jackpot = randInt(1000, 1000000);
-  lastWinAmount = 0;
-  updateUI();
-  messageEl.textContent = 'Game reset.';
-});
-
-// initial update
 updateUI();
-
 </script>
 </body>
 </html>
